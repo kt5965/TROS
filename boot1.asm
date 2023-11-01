@@ -1,12 +1,10 @@
 %include "init1.inc"
 [org 0]
-
-jmp 07C0h:start
-
+[bits 16]
+jmp 0x07C0:start
 start:
     mov ax, cs
     mov ds, ax
-
     mov ax, 0xB800
     mov es, ax
     mov di, 0
@@ -26,6 +24,8 @@ paint:
     inc edi
     mov byte [es:edi], 'e'
     inc edi
+    mov byte [es:edi], 0x20
+    inc edi
     mov byte [es:edi], 'a'
     inc edi
     mov byte [es:edi], 0x20
@@ -40,6 +40,8 @@ paint:
     inc edi
     mov byte [es:edi], 'o'
     inc edi
+    mov byte [es:edi], 0x20
+    inc edi
     mov byte [es:edi], 'd'
     inc edi
     mov byte [es:edi], 0x20
@@ -53,8 +55,9 @@ disk_read:
     mov ax, 0x1000
     mov es, ax
     mov bx, 0
+
     mov ah, 2
-    mov dl, 0
+    mov dl, 0x80
     mov ch, 0
     mov dh, 0
     mov cl, 2
@@ -62,7 +65,7 @@ disk_read:
 
     int 13h
 
-    jc disk_read
+    jc error
     
     cli
 
@@ -71,7 +74,6 @@ disk_read:
     mov eax, cr0
     or eax, 0x00000001
     mov cr0, eax
-
     jmp $+2
     nop
     nop
@@ -80,10 +82,57 @@ disk_read:
     mov ds, bx
     mov es, bx
     mov ss, bx
-
+    
     jmp dword SysCodeSelector:0x10000
 
     msgBack db '.', 0x17
+
+error:
+    mov ax, 0xB800
+    mov es, ax
+    mov di, 160               ; 다음 줄의 시작 위치로 설정
+    mov si, errorMsg
+
+print_error_msg:
+    ; 문자열의 끝에 도달했는지 체크
+    lodsb                      ; al에 문자열의 현재 문자를 로드하고 si를 1 증가
+    test al, al                ; 문자가 0인지 체크
+    jz end_print               ; 0이면 출력 종료
+
+    ; 문자를 화면에 출력
+    stosw                      ; es:di에 문자를 저장하고 di를 2 증가
+    add di, 2                  ; attribute byte 때문에 2 추가로 증가
+
+    jmp print_error_msg        ; 다음 문자를 출력하기 위해 루프
+
+end_print:
+
+errorMsg db 'Disk Error', 0
+
+error2:
+    ; ah의 값을 문자로 변환
+    push ax ; ax 값을 저장
+
+    ; 상위 4비트를 문자로 변환
+    mov al, ah
+    shr al, 4
+    add al, '0'
+    ; al에 변환된 문자 저장됨
+
+    ; 문자를 화면에 출력
+    mov ah, 0x0E ; teletype mode
+    int 10h
+
+    ; 하위 4비트를 문자로 변환
+    pop ax
+    and ah, 0x0F
+    add ah, '0'
+
+    ; 문자를 화면에 출력
+    mov al, ah
+    mov ah, 0x0E ; teletype mode
+    int 10h
+
 
 gdtr:
     dw gdt_end - gdt - 1
@@ -96,5 +145,5 @@ gdt:
     dd 0x8000FFFF, 0x0040920B
 
 gdt_end:
-    times 510-($-$) db 0
+    times 510-($-$$) db 0
     dw 0xAA55

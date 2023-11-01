@@ -11,7 +11,7 @@ PM_start:
     mov ax, VideoSelector 
     mov es, ax
 
-    mov edi, 0
+    mov edi, 80*10
     call printf            
 
     jmp $
@@ -24,24 +24,55 @@ printf:
     inc edi
     mov word [es:edi], 'r'
     inc edi
-    mov byte [es:edi], 'p'
+    mov byte [es:edi], 0x47
+    inc edi
+    mov word [es:edi], 'o'
     inc edi
     mov byte [es:edi], 0x47
     inc edi
-    mov word [es:edi], 'r'
-    inc edi
-    mov byte [es:edi], 'p'
+    mov word [es:edi], 't'
     inc edi
     mov byte [es:edi], 0x47
     inc edi
-    mov word [es:edi], 'r'
-    inc edi
-    mov byte [es:edi], 'p'
+    mov word [es:edi], 'e'
     inc edi
     mov byte [es:edi], 0x47
     inc edi
-    mov word [es:edi], 'r'
+    mov word [es:edi], 'c'
     inc edi
-
+    mov byte [es:edi], 0x47
+    inc edi
+    mov word [es:edi], 't'
+    inc edi
+    mov byte [es:edi], 0x47
+    inc edi
+    mov word [es:edi], 'e'
+    inc edi
+    mov byte [es:edi], 0x47
+    inc edi
+    mov word [es:edi], 'd'
+    inc edi
+    mov byte [es:edi], 0x47
+    inc edi
+    mov word [es:edi], ' '
+    inc edi
+    mov byte [es:edi], 0x47
+    inc edi
+    mov word [es:edi], 'M'
+    inc edi
+    mov byte [es:edi], 0x47
+    inc edi
+    mov word [es:edi], 'o'
+    inc edi
+    mov byte [es:edi], 0x47
+    inc edi
+    mov word [es:edi], 'd'
+    inc edi
+    mov byte [es:edi], 0x47
+    inc edi
+    mov word [es:edi], 'e'
+    inc edi
+    mov byte [es:edi], 0x47
+    inc edi
 
     ret

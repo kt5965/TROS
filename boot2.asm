@@ -7,9 +7,15 @@ start:
     mov ax, 0xB800
     mov es, ax
     mov di, 0
+    mov ax, word [msgBack]
     mov cx, 0x7FF
 
 paint:
+    mov word [es:di], ax
+    add di, 2
+    dec cx
+    jnz paint
+
     mov edi, 0
     mov byte [es:edi], 'T'
     inc edi
@@ -75,7 +81,8 @@ disk_read:
 
     jmp dword SysCodeSelector:0x10000
 
-
+    msgBack db '.', 0x17
+    
 gdtr:
     dw gdt_end - gdt - 1
     dd gdt+0x7C00 
