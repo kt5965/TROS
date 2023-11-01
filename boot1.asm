@@ -1,7 +1,6 @@
-[org 0]                     ; 메모리의 어디에서 시작할지 지정
-[bits 16]                   ; 16비트로 동작할 것이다.
-    jmp 0x07C0:start        ; 이걸 기계어로 번역하면 EA0500C007이 된다. EA는 jmp, 05는 start C007은 07C0이다. 리틀 엔디안을 따른다.
-
+%include "init1.inc"
+[org 0]               
+jmp 07C0h:start        
 start:                      
     mov ax, cs
     mov ds, ax
@@ -9,45 +8,92 @@ start:
     mov es, ax
     mov di, 0
     mov ax, word [msgBack]
-    mov cx, 0x7EF
+    mov cx, 0x7FF
 
 paint:
     mov word [es:di], ax
     add di, 2
     dec cx
+
     jnz paint
 
-    mov di, 0
-    mov byte [es:di], 'T'
-    inc di
-    mov byte [es:di], 0x05
-    inc di
-    mov byte [es:di], 'A'
-    inc di
-    mov byte [es:di], 0x16
-    inc di
-    mov byte [es:di], 'E'
-    inc di
-    mov byte [es:di], 0x27
-    inc di
-    mov byte [es:di], 'R'
-    inc di
-    mov byte [es:di], 0x30
-    inc di
-    mov byte [es:di], 'A'
-    inc di
-    mov byte [es:di], 0x41
-    inc di
-    mov byte [es:di], 'N'
-    inc di
-    mov byte [es:di], 0x41
-    inc di
-    mov byte [es:di], 'G'
+    mov edi, 0
+    mov byte [es:edi], 'T'
+    inc edi
+    mov byte [es:edi], 0x05
+    inc edi
+    mov byte [es:edi], 'A'
+    inc edi
+    mov byte [es:edi], 0x16
+    inc edi
+    mov byte [es:edi], 'E'
+    inc edi
+    mov byte [es:edi], 0x27
+    inc edi
+    mov byte [es:edi], 'R'
+    inc edi
+    mov byte [es:edi], 0x30
+    inc edi
+    mov byte [es:edi], 'A'
+    inc edi
+    mov byte [es:edi], 0x41
+    inc edi
+    mov byte [es:edi], 'N'
+    inc edi
+    mov byte [es:edi], 0x41
+    inc edi
+    mov byte [es:edi], 'G'
+    inc edi
 
-    jmp $
 
-msgBack db '.', 0x17
+disk_read:
+    mov ax, 0x1000
+    mov es, ax
+    mov bx, 0
 
-times 510-($-$$) db 0
+    mov ah, 2
+    mov dl, 0
+    mov ch, 0
+    mov dh, 0
+    mov cl, 2
+    mov al, 1
 
-dw 0xAA55
+
+    int 13h
+
+    jc disk_read
+    
+    cli
+
+    lgdt[gdtr]
+
+    mov eax, cr0
+    or eax, 0x00000001
+    mov cr0, eax
+
+    jmp $+2
+    nop
+    nop
+
+    mov bx, SysDataSelector
+    mov ds, bx
+    mov es, bx
+    mov ss, bx
+
+    jmp dword SysCodeSelector:0x10000
+
+    msgBack db '.', 0x17
+
+gdtr:
+    dw gdt_end - gdt - 1
+    dd gdt+0x7C00 
+
+gdt:
+    dd 0x00000000, 0x00000000 
+    dd 0x0000FFFF, 0x00CF9A00
+    dd 0x0000FFFF, 0x00CF9200
+    dd 0x8000FFFF, 0x0040920B
+
+gdt_end:
+    times 510-($-$$) db 0
+    dw 0xAA55
