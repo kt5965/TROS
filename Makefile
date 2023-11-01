@@ -1,24 +1,25 @@
 # Makefile for boot2.asm and kernel1.asm
 
 # Default target
-all: test.img
+all: bin/test.img
 
-# Assemble boot2.asm to produce a binary
-boot1.bin: boot1.asm
-	nasm -f bin boot1.asm -o boot1.bin
+# Directories
+SRC_DIR := src
+BIN_DIR := bin
+
+# Assemble boot1.asm to produce a binary
+$(BIN_DIR)/boot1.bin: $(SRC_DIR)/boot1.asm
+	nasm -f bin -I./src/ $(SRC_DIR)/boot1.asm -o $(BIN_DIR)/boot1.bin
 
 # Assemble kernel1.asm to produce a binary
-kernel1.bin: kernel1.asm
-	nasm -f bin kernel1.asm -o kernel1.bin
+$(BIN_DIR)/kernel1.bin: $(SRC_DIR)/kernel1.asm
+	nasm -f bin -I./src/ $(SRC_DIR)/kernel1.asm -o $(BIN_DIR)/kernel1.bin
 
 # Create the bootable image
-test.img: boot1.bin kernel1.bin
-	dd if=/dev/zero of=test.img bs=512 count=2880
-	dd if=boot1.bin of=test.img bs=512 conv=notrunc
-	dd if=kernel1.bin of=test.img bs=512 seek=1 conv=notrunc
-
-# Clean up the generated files
+bin/test.img: $(BIN_DIR)/boot1.bin $(BIN_DIR)/kernel1.bin
+	dd if=/dev/zero of=$(BIN_DIR)/test.img bs=512 count=2880
+	dd if=$(BIN_DIR)/boot1.bin of=$(BIN_DIR)/test.img bs=512 conv=notrunc
+	dd if=$(BIN_DIR)/kernel1.bin of=$(BIN_DIR)/test.img bs=512 seek=1 conv=notrunc
+# clean
 clean:
-	rm -f boot1.bin kernel1.bin test.img
-
-.PHONY: all clean
+	rm -f $(BIN_DIR)/boot1.bin $(BIN_DIR)/kerbel1.bin test.img

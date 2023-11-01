@@ -109,29 +109,29 @@ end_print:
 
 errorMsg db 'Disk Error', 0
 
-error2:
-    ; ah의 값을 문자로 변환
-    push ax ; ax 값을 저장
+; error2:
+;     ; ah의 값을 문자로 변환
+;     push ax ; ax 값을 저장
 
-    ; 상위 4비트를 문자로 변환
-    mov al, ah
-    shr al, 4
-    add al, '0'
-    ; al에 변환된 문자 저장됨
+;     ; 상위 4비트를 문자로 변환
+;     mov al, ah
+;     shr al, 4
+;     add al, '0'
+;     ; al에 변환된 문자 저장됨
 
-    ; 문자를 화면에 출력
-    mov ah, 0x0E ; teletype mode
-    int 10h
+;     ; 문자를 화면에 출력
+;     mov ah, 0x0E ; teletype mode
+;     int 10h
 
-    ; 하위 4비트를 문자로 변환
-    pop ax
-    and ah, 0x0F
-    add ah, '0'
+;     ; 하위 4비트를 문자로 변환
+;     pop ax
+;     and ah, 0x0F
+;     add ah, '0'
 
-    ; 문자를 화면에 출력
-    mov al, ah
-    mov ah, 0x0E ; teletype mode
-    int 10h
+;     ; 문자를 화면에 출력
+;     mov al, ah
+;     mov ah, 0x0E ; teletype mode
+;     int 10h
 
 
 gdtr:
