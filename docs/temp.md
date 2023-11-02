@@ -169,3 +169,17 @@ VideoSelector equ 0x18 -> gdt에서 오프셋이 24바이트라는 뜻
 이렇게 GDT 설정이 완료된다. 이를 사용하곘다고 시스템에 알려주면 되는데 이는 lgdt[gdtr]명령으로 GDTR이라는 레지스터를 통해 GDT를 LGDT에 저장해준다.
 
 LGDT(포인터)는 메모리에서 GDT가 가지고 있는 베이스 어드레스와 세그먼트 리미트 값을 인자 값으로 전달 받고, 이를 GDTR 레지스터에 저장한다.
+
+
+### IDT
+Inturrupt Descriptor Table
+핸들러 오프셋, 핸들러의 코드 세그먼트 셀렉터, P(세그먼트 메모리 존재 여부), DPL(핸들러 실행 특권), D(비트 지정)
+
+이러한 디스크립터를 메모리상에 256개를 만들어 하나의 IDT를 갖추게 해준다.
+
+### PIC
+Programmable Interrupt Controler
+하드웨어 인터럽트를 처리 대부분의 PC는 서로 다른 주소에 위치한 두 PIC를 갖는다.
+PIC는 크게 master -slave 구조로 이루어져 있다.
+![Alt text](image-1.png)
+
