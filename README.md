@@ -1,3 +1,4 @@
 # TROS
-OS를 만들고 있습니다
+
+I am creating my own operating system
 ![Alt text](imgs/image.png)
