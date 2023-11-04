@@ -145,7 +145,7 @@ isr_33_keyboard:
     push ds
     pushfd
     in al, 0x60
-    mov al, 0x60
+    mov al, 0x20
     out 0x20, al
 
     mov ax, VideoSelector

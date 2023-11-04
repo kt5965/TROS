@@ -5,11 +5,7 @@ jmp 0x07C0:start
 start:
     mov ax, cs
     mov ds, ax
-    ; mov ax, 0xB800
     mov es, ax
-    ; mov di, 0
-    ; mov ax, word [msgBack]
-    ; mov cx, 0x7FF -> 점찍는 부분 삭제
 
 reset:
     mov ax, 0
@@ -44,10 +40,6 @@ disk_read:
 
     jc error
     
-    ; mov dx, 0x3F2
-    ; xor al, al
-    ; out dx, al
-
     cli
     mov al, 0x11  ; PIC를 초기화한다.
     out 0x20, al
