@@ -46,8 +46,8 @@ loop_idt:
     mov al, 0xFC
     out 0x21, al
     sti
-
-    jmp $
+    jmp dword SysCodeSelector:0x10200
+    ; jmp $
 
 
 
