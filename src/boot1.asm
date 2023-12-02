@@ -34,7 +34,7 @@ disk_read:
     mov ch, 0
     mov dh, 0
     mov cl, 2
-    mov al, 2
+    mov al, 3
 
     int 13h
 
