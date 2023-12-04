@@ -80,7 +80,8 @@ void idt_ignore()
 		"pop es;"
 		"pop fs;"
 		"pop gs;"
-		"leave;"
+		"mov esp, ebp;"
+                "pop ebp;"
 		"nop;"
 		"iretd;"
 	);
@@ -114,7 +115,8 @@ void idt_timer()
 		"pop es;"
 		"pop fs;"
 		"pop gs;"
-		"leave;"
+	        "mov esp, ebp;"
+                "pop ebp;"
 		"nop;"
 		"iretd;"
 	);
@@ -149,7 +151,8 @@ void idt_keyboard()
 		"pop fs;"
 		"pop gs;"
 		"popad;"
-		"leave;"
+		"mov esp, ebp;"
+		"pop ebp;"
 		"nop;"
 		"iretd;"
 	);
