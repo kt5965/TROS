@@ -1,78 +1,45 @@
 #include "interrupt.h"
 #include "function.h"
 
-struct IDT inttable[4];
-struct IDTR idtr = { 256*8-1,0 };
-
+struct IDT idt[256];
+struct IDTR idtr;
 unsigned char keyt[2] = { 'A', 0 };
-unsigned char key[2] = { 'A', 0 };
-
+unsigned int key_ticks = 0;
+unsigned int timer_ticks = 0;
+unsigned int ignore_ticks = 10;
 void init_intdesc()
 {
-
-	int i,j;
-	unsigned int ptr;
+	// struct IDTR idtr;
+	int i,j;	
 	unsigned short *isr;
 
-	{  // 0x00 : isr_ignore
-		ptr = (unsigned int)idt_ignore;
-		inttable[0].selector = (unsigned short)0x08;
-		inttable[0].type = (unsigned short)0x8E;
-		inttable[0].offsetl = (unsigned short)(ptr & 0xFFFF);
-		inttable[0].offseth = (unsigned short)(ptr >> 16);
-
-	}
-
-	{  // 0x01 : isr_timer
-		ptr = (unsigned int)idt_timer;
-		inttable[1].selector = (unsigned short)0x08;
-		inttable[1].type = (unsigned short)0x8E;
-		inttable[1].offsetl = (unsigned short)(ptr & 0xFFFF);
-		inttable[1].offseth = (unsigned short)(ptr >> 16);
-	}
-
-	{  // 0x02 : isr_keyboard
-		ptr = (unsigned int)idt_keyboard;
-		inttable[2].selector = (unsigned short)0x08;
-		inttable[2].type = (unsigned short)0x8E;
-		inttable[2].offsetl = (unsigned short)(ptr & 0xFFFF);
-		inttable[2].offseth = (unsigned short)(ptr >> 16);
-	}
-
-	// 물리주소 0x0 번지에 ISR 배치
-
-	for (i = 0; i < 256; i++)
+	idtr.size = 256*8-1;
+	idtr.addr = (unsigned int)&idt;
+	for (int i = 0; i < 256; i++)
 	{
-		isr = (unsigned short*)(0x0 + i * 8);
-		*isr = inttable[0].offsetl;
-		*(isr + 1) = inttable[0].selector;
-		*(isr + 2) = inttable[0].type;
-		*(isr + 3) = inttable[0].offseth;
-
+		unsigned int ptr = (unsigned int)idt_ignore;
+		idt[i].selector = (unsigned short)0x08;
+		idt[i].type = (unsigned short)0x8E00;
+		idt[i].offsetl = (unsigned short)(ptr & 0xFFFF);
+		idt[i].offseth = (unsigned short)(ptr >> 16);
 	}
 
-	// 타이머 ISR 등록
-	{
-		isr = (unsigned short*)(0x0 + 8 * 0x20);
-		*isr = inttable[1].offsetl;
-		*(isr + 1) = inttable[1].selector;
-		*(isr + 2) = inttable[1].type;
-		*(isr + 3) = inttable[1].offseth;
+	{  // 32 : isr_timer
+		unsigned int ptr = (unsigned int)idt_timer;
+		idt[32].selector = (unsigned short)0x08;
+		idt[32].type = (unsigned short)0x8E00;
+		idt[32].offsetl = (unsigned short)(ptr & 0xFFFF);
+		idt[32].offseth = (unsigned short)(ptr >> 16);
 	}
 
-	// 키보드 ISR 등록
-
-	{
-		isr = (unsigned short*)(0x0 + 8 * 0x21);
-		*isr = inttable[2].offsetl;
-		*(isr + 1) = inttable[2].selector;
-		*(isr + 2) = inttable[2].type;
-		*(isr + 3) = inttable[2].offseth;
-	
+	{  // 33 : isr_keyboard
+		unsigned int ptr = (unsigned int)idt_keyboard;
+		idt[33].selector = (unsigned short)0x08;
+		idt[33].type = (unsigned short)0x8E00;
+		idt[33].offsetl = (unsigned short)(ptr & 0xFFFF);
+		idt[33].offseth = (unsigned short)(ptr >> 16);
 	}
-
 	//  인터럽트 작동 시작
-
     __asm__ __volatile__
     (
         "mov eax, %0;"  // idtr의 주소를 eax에 로드
@@ -82,10 +49,8 @@ void init_intdesc()
         "sti"           // 인터럽트 활성화
         : 
         : "r"(&idtr)
-        : "eax"
     );
-    char str[3] = "ab";
-    kprintf(str, 15, 3);
+	kprintf("test", 2, 5);
 }
 
 void idt_ignore()
@@ -102,9 +67,12 @@ void idt_ignore()
 		"mov al, 0x20;"
 		"out 0x20, al;"
 	);
-    char str[11] = "idt_ignore";
-	kprintf(str, 5, 2);
-	
+	char tick_str[30];
+	ignore_ticks++;
+    itoa(ignore_ticks, tick_str, 3);
+	kprintf_at(tick_str, 5, 2);
+
+
 	__asm__ __volatile__
 	(
 		"popfd;"
@@ -113,15 +81,14 @@ void idt_ignore()
 		"pop es;"
 		"pop fs;"
 		"pop gs;"
-		"iret;"
+		"leave;"
+		"nop;"
+		"iretd;"
 	);
-	
-	
 }
 
 void idt_timer()
 {
-
 	__asm__ __volatile__
 	(
 		"push gs;"
@@ -134,10 +101,12 @@ void idt_timer()
 		"out 0x20, al;"
 		
 	);
-
+	char tick_str[30];
+	timer_ticks++;
+    itoa(timer_ticks, tick_str, 3);
+	kprintf_at(tick_str, 5, 5);
 	kprintf(keyt, 7, 40);
 	keyt[0]++;
-
 	__asm__ __volatile__
 	(
 		"popfd;"
@@ -146,7 +115,9 @@ void idt_timer()
 		"pop es;"
 		"pop fs;"
 		"pop gs;"
-		"iret;"
+		"leave;"
+		"nop;"
+		"iretd;"
 	);
 
 
@@ -154,32 +125,34 @@ void idt_timer()
 
 void idt_keyboard()
 {
-
 	__asm__ __volatile__
 	(
+		"pushad;"
 		"push gs;"
 		"push fs;"
 		"push es;"
 		"push ds;"
-		"pushad;"
 		"pushfd;"
+
+	);
+	char tick_str[30];
+	key_ticks++;
+    itoa(key_ticks, tick_str, 3);
+	kprintf_at(tick_str, 3, 6);
+	__asm__ __volatile__
+	(
 		"in al, 0x60;"
 		"mov al, 0x20;"
 		"out 0x20, al;"
-	);
-
-	kprintf(key, 8, 40);
-	key[0]++;
-
-	__asm__ __volatile__
-	(
 		"popfd;"
-		"popad;"
 		"pop ds;"
 		"pop es;"
 		"pop fs;"
 		"pop gs;"
-		"iret;"
+		"popad;"
+		"leave;"
+		"nop;"
+		"iretd;"
 	);
 
 }

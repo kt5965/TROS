@@ -3,7 +3,7 @@
 
 void main() 
 {
-    char str[5] = "Test";
+    char str[20] = "Taerang OS";
     kprintf(str, 11, 5);
-    init_intdesc();
+	init_intdesc();
 }
