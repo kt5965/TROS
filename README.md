@@ -30,4 +30,4 @@ In text mode video memory, each character takes up 2 bytes, one for the characte
 3. need to check idt_ignore
 ![Alt text](imgs/add_idt.png)
 
-
+.
