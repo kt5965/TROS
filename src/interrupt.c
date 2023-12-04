@@ -50,7 +50,6 @@ void init_intdesc()
         : 
         : "r"(&idtr)
     );
-	kprintf("test", 2, 5);
 }
 
 void idt_ignore()
