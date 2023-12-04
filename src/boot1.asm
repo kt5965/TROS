@@ -34,7 +34,7 @@ disk_read:
     mov ch, 0
     mov dh, 0
     mov cl, 2
-    mov al, 3
+    mov al, 10
 
     int 13h
 
@@ -42,9 +42,9 @@ disk_read:
     
     cli
     mov al, 0x11  ; PIC를 초기화한다.
-    out 0x20, al
-    dw 0x00eb, 0x00eb
-    out 0xA0, al
+    out 0x20, al  ; Master PIC
+    dw 0x00eb, 0x00eb ; jmp $+2, jmp $+2
+    out 0xA0, al  ; Slave PIC
     dw 0x00eb, 0x00eb
 
     mov al, 0x20
@@ -74,25 +74,25 @@ disk_read:
     out 0x21, al
 
 
-    lgdt[gdtr]
+lgdt[gdtr]
 
-    mov eax, cr0
-    or eax, 0x00000001
-    mov cr0, eax
-    jmp $+2
-    nop
-    nop
+mov eax, cr0
+or eax, 0x00000001
+mov cr0, eax
+jmp $+2
+nop
+nop
 
-    mov bx, SysDataSelector
-    mov ds, bx
-    mov es, bx
-    mov fs, bx
-    mov gs, bx
-    mov ss, bx
-    
-    jmp dword SysCodeSelector:0x10000
+mov bx, SysDataSelector
+mov ds, bx
+mov es, bx
+mov fs, bx
+mov gs, bx
+mov ss, bx
 
-    msgBack db '.', 0x17
+jmp dword SysCodeSelector:0x10000
+
+msgBack db ' ', 0x17
 
 error:
     mov ax, 0xB800
