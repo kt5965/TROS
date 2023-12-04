@@ -1,7 +1,7 @@
 #include "interrupt.h"
 #include "function.h"
 
-struct IDT inttable[3];
+struct IDT inttable[4];
 struct IDTR idtr = { 256*8-1,0 };
 
 unsigned char keyt[2] = { 'A', 0 };
@@ -29,7 +29,6 @@ void init_intdesc()
 		inttable[1].type = (unsigned short)0x8E;
 		inttable[1].offsetl = (unsigned short)(ptr & 0xFFFF);
 		inttable[1].offseth = (unsigned short)(ptr >> 16);
-
 	}
 
 	{  // 0x02 : isr_keyboard
@@ -38,7 +37,6 @@ void init_intdesc()
 		inttable[2].type = (unsigned short)0x8E;
 		inttable[2].offsetl = (unsigned short)(ptr & 0xFFFF);
 		inttable[2].offseth = (unsigned short)(ptr >> 16);
-
 	}
 
 	// 물리주소 0x0 번지에 ISR 배치
