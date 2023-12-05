@@ -21,6 +21,11 @@ Problems with following someone else's code
 -> Allocated 256 IDTs and ignored all but 32 and 33 timers and keyboard.
 -> Add a tick to confirm normal behavior
 
+Keyboard Driver
+0xAE (Enable keyboard interface) - Clears bit 4 of command byte and re-enables communication with keyboard. - [https://www-ug.eecg.toronto.edu/msl/nios_devices/datasheets/PS2%20Keyboard%20Protocol.htm]
+
+
+
 Current problem
 1. when passing char*(str) as a string, normal output is not possible -> when passing char str[] = "foo" as an array, normal output is possible.
 
@@ -30,4 +35,4 @@ In text mode video memory, each character takes up 2 bytes, one for the characte
 3. need to check idt_ignore
 ![Alt text](imgs/add_idt.png)
 
-.
+

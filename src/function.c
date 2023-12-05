@@ -11,20 +11,22 @@ void kprintf(char* str, int line, int col)
 
 // 간단한 itoa 함수. 숫자를 문자열로 변환
 char* itoa(int value, char* str, int base) {
-    char* ptr = str, *ptr1 = str, tmp_char;
+    char* ptr = str, *ptr1 = str;
+    char tmp_char;
     int tmp_value;
 
     // 체크: 인벨리드 베이스
     if (base < 2 || base > 36) { *str = '\0'; return str; }
 
     do {
-        tmp_value = value;
-        value /= base;
-        *ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"[35 + (tmp_value - value * base)];
+        tmp_value = value; // 만약 value가 10 이면
+        value /= base; // base 로 나눈 몫을 value로하고
+        *ptr++ = "0123456789abcdefghijklmnopqrstuvwxyz"[tmp_value - value * base];
     } while ( value );
 
     // 음수일 경우 '-' 부호 추가
-    if (tmp_value < 0) *ptr++ = '-';
+    if (tmp_value < 0) 
+        *ptr++ = '-';
     *ptr-- = '\0';
     while(ptr1 < ptr) {
         tmp_char = *ptr;

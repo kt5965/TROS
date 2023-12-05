@@ -7,6 +7,10 @@ unsigned char keyt[2] = { 'A', 0 };
 unsigned int key_ticks = 0;
 unsigned int timer_ticks = 0;
 unsigned int ignore_ticks = 10;
+
+// keyboard driver
+unsigned char keybuf;
+
 void init_intdesc()
 {
 	// struct IDTR idtr;
@@ -39,7 +43,18 @@ void init_intdesc()
 		idt[33].offsetl = (unsigned short)(ptr & 0xFFFF);
 		idt[33].offseth = (unsigned short)(ptr >> 16);
 	}
+	// x86 아키텍처에서 하드웨어와의 통신에 사용되는 언어
+	// 0xAE를 AL 레지스터에 이동(일반 목적 레지스터)
+	// 0xAE는 키보드 인터페이스 활성화
+	// out은 AL 레지스터의 내용을 I/O 포트 64번에 출력
+	__asm__ __volatile__
+	(
+		"mov al, 0xAE;"
+		"out 0x64, al;"
+	);
+
 	//  인터럽트 작동 시작
+
     __asm__ __volatile__
     (
         "mov eax, %0;"  // idtr의 주소를 eax에 로드
@@ -68,10 +83,8 @@ void idt_ignore()
 	);
 	char tick_str[30];
 	ignore_ticks++;
-    itoa(ignore_ticks, tick_str, 3);
+    itoa(ignore_ticks, tick_str, 10);
 	kprintf_at(tick_str, 5, 2);
-
-
 	__asm__ __volatile__
 	(
 		"popfd;"
@@ -81,7 +94,7 @@ void idt_ignore()
 		"pop fs;"
 		"pop gs;"
 		"mov esp, ebp;"
-                "pop ebp;"
+        "pop ebp;"
 		"nop;"
 		"iretd;"
 	);
@@ -103,7 +116,7 @@ void idt_timer()
 	);
 	char tick_str[30];
 	timer_ticks++;
-    itoa(timer_ticks, tick_str, 3);
+    itoa(timer_ticks, tick_str, 10);
 	kprintf_at(tick_str, 5, 5);
 	kprintf(keyt, 7, 40);
 	keyt[0]++;
@@ -115,8 +128,8 @@ void idt_timer()
 		"pop es;"
 		"pop fs;"
 		"pop gs;"
-	        "mov esp, ebp;"
-                "pop ebp;"
+		"mov esp, ebp;"
+        "pop ebp;"
 		"nop;"
 		"iretd;"
 	);
@@ -134,15 +147,19 @@ void idt_keyboard()
 		"push es;"
 		"push ds;"
 		"pushfd;"
-
+		"xor al,al;"
+		"in al, 0x60;"
 	);
-	char tick_str[30];
-	key_ticks++;
-    itoa(key_ticks, tick_str, 3);
-	kprintf_at(tick_str, 3, 6);
+	__asm__ __volatile__("mov %0, al;" :"=r"(keybuf) );
+	
+	kprintf(&keybuf, 8, 40);
+
+	// char tick_str[30];
+	// key_ticks++;
+    // itoa(key_ticks, tick_str, 10);
+	// kprintf_at(tick_str, 3, 6);
 	__asm__ __volatile__
 	(
-		"in al, 0x60;"
 		"mov al, 0x20;"
 		"out 0x20, al;"
 		"popfd;"
