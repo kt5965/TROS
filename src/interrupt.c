@@ -3,13 +3,78 @@
 
 struct IDT idt[256];
 struct IDTR idtr;
+
+static unsigned char keyboard[160] = {0,};
+static unsigned short index = 0;
+
+
 unsigned char keyt[2] = { 'A', 0 };
 unsigned int key_ticks = 0;
 unsigned int timer_ticks = 0;
 unsigned int ignore_ticks = 10;
-
 // keyboard driver
 unsigned char keybuf;
+unsigned char shift = 0;
+
+void updateShiftState(unsigned char scanCode) {
+    if (scanCode == 0x2A || scanCode == 0x36) {  // Shift 키가 눌렸을 때
+        shift = 1;
+    } else if (scanCode == 0xAA || scanCode == 0xB6) {  // Shift 키가 떼어졌을 때
+        shift = 0;
+    }
+}
+
+
+unsigned char transScan(unsigned char target, unsigned char shift)
+{
+	unsigned char result;
+
+	switch (target) 
+	{
+		case 0x1E: result = shift ? 'A' : 'a'; break;  // A
+		case 0x30: result = shift ? 'B' : 'b'; break;  // B
+		case 0x2E: result = shift ? 'C' : 'c'; break;  // C
+		case 0x20: result = shift ? 'D' : 'd'; break;  // D
+		case 0x12: result = shift ? 'E' : 'e'; break;  // E
+		case 0x21: result = shift ? 'F' : 'f'; break;  // F
+		case 0x22: result = shift ? 'G' : 'g'; break;  // G
+		case 0x23: result = shift ? 'H' : 'h'; break;  // H
+		case 0x17: result = shift ? 'I' : 'i'; break;  // I
+		case 0x24: result = shift ? 'J' : 'j'; break;  // J
+		case 0x25: result = shift ? 'K' : 'k'; break;  // K
+		case 0x26: result = shift ? 'L' : 'l'; break;  // L
+		case 0x32: result = shift ? 'M' : 'm'; break;  // M
+		case 0x31: result = shift ? 'N' : 'n'; break;  // N
+		case 0x18: result = shift ? 'O' : 'o'; break;  // O
+		case 0x19: result = shift ? 'P' : 'p'; break;  // P
+		case 0x10: result = shift ? 'Q' : 'q'; break;  // Q
+		case 0x13: result = shift ? 'R' : 'r'; break;  // R
+		case 0x1F: result = shift ? 'S' : 's'; break;  // S
+		case 0x14: result = shift ? 'T' : 't'; break;  // T
+		case 0x16: result = shift ? 'U' : 'u'; break;  // U
+		case 0x2F: result = shift ? 'V' : 'v'; break;  // V
+		case 0x11: result = shift ? 'W' : 'w'; break;  // W
+		case 0x2D: result = shift ? 'X' : 'x'; break;  // X
+		case 0x15: result = shift ? 'Y' : 'y'; break;  // Y
+		case 0x2C: result = shift ? 'Z' : 'z'; break;  // Z
+		case 0x02: result = shift ? '!' : '1'; break;  // 1
+		case 0x03: result = shift ? '@' : '2'; break;  // 2
+		case 0x04: result = shift ? '#' : '3'; break;  // 3
+		case 0x05: result = shift ? '$' : '4'; break;  // 4
+		case 0x06: result = shift ? '%' : '5'; break;  // 5
+		case 0x07: result = shift ? '^' : '6'; break;  // 6
+		case 0x08: result = shift ? '&' : '7'; break;  // 7
+		case 0x09: result = shift ? '*' : '8'; break;  // 8
+		case 0x0A: result = shift ? '(' : '9'; break;  // 9
+		case 0x0B: result = shift ? ')' : '0'; break;  // 0
+
+		case 0x39: result = ' '; break; // 스페이스
+		case 0x0E: result = 0x08; break; // 백스페이스 아스키코드 = 8
+		default: result = 0xFF; break; 
+			// 구현안된 것은 무시한다. 구분자는 0xFF
+	}
+	return result;
+}
 
 void init_intdesc()
 {
@@ -151,8 +216,16 @@ void idt_keyboard()
 		"in al, 0x60;"
 	);
 	__asm__ __volatile__("mov %0, al;" :"=r"(keybuf) );
-	
-	kprintf(&keybuf, 8, 40);
+	updateShiftState(keybuf);
+	keybuf = transScan(keybuf, shift);
+
+	if (keybuf == 0x08 && index != 0)
+		keyboard[--index] = 0;
+	else if (keybuf != 0xFF && keybuf !=0x08)
+		keyboard[index++] = keybuf;
+
+	kprintf_line_clear(8);
+	kprintf(keyboard, 8, 0);
 
 	// char tick_str[30];
 	// key_ticks++;

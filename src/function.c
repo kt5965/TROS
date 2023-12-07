@@ -49,3 +49,13 @@ void kprintf_at(const char* message, int col, int row) {
         offset += 2;
     }
 }
+
+void kprintf_line_clear(int line)
+{
+    volatile char* video_memory = (volatile char*)(0xB8000 + 160*line);
+    for (int i = 0; i < 160; i++)
+    {
+        *video_memory++ = 0;
+        *video_memory++ = 0x7;
+    }
+}

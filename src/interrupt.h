@@ -4,7 +4,8 @@ void init_intdesc();
 void idt_ignore();
 void idt_timer();
 void idt_keyboard();
-
+unsigned char transScan(unsigned char keybuf, unsigned char shift);
+void updateShiftState(unsigned char scanCode);
 struct IDT
 {
 	unsigned short offsetl;

@@ -41,7 +41,7 @@ disk_read:
     jc error
     
     cli
-    mov al, 0x11  ; PICë¥? ì´ˆê¸°?™”?•œ?‹¤.
+    mov al, 0x11  ; PICï¿½? ì´ˆê¸°?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½.
     out 0x20, al  ; Master PIC
     dw 0x00eb, 0x00eb ; jmp $+2, jmp $+2
     out 0xA0, al  ; Slave PIC
@@ -92,25 +92,25 @@ mov ss, bx
 
 jmp dword SysCodeSelector:0x10000
 
-msgBack db ' ', 0x17
+msgBack db ' ', 0x07
 
 error:
     mov ax, 0xB800
     mov es, ax
-    mov di, 160               ; ?‹¤?Œ ì¤„ì˜ ?‹œ?ž‘ ?œ„ì¹˜ë¡œ ?„¤? •
+    mov di, 160               ; ?ï¿½ï¿½?ï¿½ï¿½ ì¤„ì˜ ?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½ì¹˜ë¡œ ?ï¿½ï¿½?ï¿½ï¿½
     mov si, errorMsg
 
 print_error_msg:
-    ; ë¬¸ìž?—´?˜ ??— ?„?‹¬?–ˆ?Š”ì§? ì²´í¬
-    lodsb                      ; al?— ë¬¸ìž?—´?˜ ?˜„?ž¬ ë¬¸ìžë¥? ë¡œë“œ?•˜ê³? sië¥? 1 ì¦ê??
-    test al, al                ; ë¬¸ìžê°? 0?¸ì§? ì²´í¬
-    jz end_print               ; 0?´ë©? ì¶œë ¥ ì¢…ë£Œ
+    ; ë¬¸ìž?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ï¿½? ì²´í¬
+    lodsb                      ; al?ï¿½ï¿½ ë¬¸ìž?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½ ë¬¸ìžï¿½? ë¡œë“œ?ï¿½ï¿½ï¿½? siï¿½? 1 ì¦ï¿½??
+    test al, al                ; ë¬¸ìžï¿½? 0?ï¿½ï¿½ï¿½? ì²´í¬
+    jz end_print               ; 0?ï¿½ï¿½ï¿½? ì¶œë ¥ ì¢…ë£Œ
 
-    ; ë¬¸ìžë¥? ?™”ë©´ì— ì¶œë ¥
-    stosw                      ; es:di?— ë¬¸ìžë¥? ????ž¥?•˜ê³? dië¥? 2 ì¦ê??
-    add di, 2                  ; attribute byte ?•Œë¬¸ì— 2 ì¶”ê??ë¡? ì¦ê??
+    ; ë¬¸ìžï¿½? ?ï¿½ï¿½ë©´ì— ì¶œë ¥
+    stosw                      ; es:di?ï¿½ï¿½ ë¬¸ìžï¿½? ????ï¿½ï¿½?ï¿½ï¿½ï¿½? diï¿½? 2 ì¦ï¿½??
+    add di, 2                  ; attribute byte ?ï¿½ï¿½ë¬¸ì— 2 ì¶”ï¿½??ï¿½? ì¦ï¿½??
 
-    jmp print_error_msg        ; ?‹¤?Œ ë¬¸ìžë¥? ì¶œë ¥?•˜ê¸? ?œ„?•´ ë£¨í”„
+    jmp print_error_msg        ; ?ï¿½ï¿½?ï¿½ï¿½ ë¬¸ìžï¿½? ì¶œë ¥?ï¿½ï¿½ï¿½? ?ï¿½ï¿½?ï¿½ï¿½ ë£¨í”„
 
 end_print:
 
