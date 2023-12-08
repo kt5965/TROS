@@ -1,11 +1,8 @@
 #include "interrupt.h"
 #include "function.h"
-
+#include "data.h"
 struct IDT idt[256];
 struct IDTR idtr;
-
-static unsigned char keyboard[160] = {0,};
-static unsigned short index = 0;
 
 
 unsigned char keyt[2] = { 'A', 0 };
@@ -15,6 +12,7 @@ unsigned int ignore_ticks = 10;
 // keyboard driver
 unsigned char keybuf;
 unsigned char shift = 0;
+unsigned char ctrl = 0;
 
 void updateShiftState(unsigned char scanCode) {
     if (scanCode == 0x2A || scanCode == 0x36) {  // Shift 키가 눌렸을 때
@@ -24,11 +22,18 @@ void updateShiftState(unsigned char scanCode) {
     }
 }
 
+void updateCtrlState(unsigned char scanCode) {
+	if (scanCode == 0x1D || scanCode == 0xE0) {
+		ctrl = 1;
+	} else if (scanCode == 0x9D || scanCode == 0xE0) {
+		ctrl = 0;
+	}
+}
+
 
 unsigned char transScan(unsigned char target, unsigned char shift)
 {
 	unsigned char result;
-
 	switch (target) 
 	{
 		case 0x1E: result = shift ? 'A' : 'a'; break;  // A
@@ -42,7 +47,18 @@ unsigned char transScan(unsigned char target, unsigned char shift)
 		case 0x17: result = shift ? 'I' : 'i'; break;  // I
 		case 0x24: result = shift ? 'J' : 'j'; break;  // J
 		case 0x25: result = shift ? 'K' : 'k'; break;  // K
-		case 0x26: result = shift ? 'L' : 'l'; break;  // L
+		case 0x26: 
+			if (ctrl) {
+				kprintf_clear_all();
+				curline = -1;
+			}
+			else if (shift) {
+				result = 'L';
+			}
+			else {
+				result = 'l';
+			}
+			break;
 		case 0x32: result = shift ? 'M' : 'm'; break;  // M
 		case 0x31: result = shift ? 'N' : 'n'; break;  // N
 		case 0x18: result = shift ? 'O' : 'o'; break;  // O
@@ -67,10 +83,10 @@ unsigned char transScan(unsigned char target, unsigned char shift)
 		case 0x09: result = shift ? '*' : '8'; break;  // 8
 		case 0x0A: result = shift ? '(' : '9'; break;  // 9
 		case 0x0B: result = shift ? ')' : '0'; break;  // 0
-
 		case 0x39: result = ' '; break; // 스페이스
 		case 0x0E: result = 0x08; break; // 백스페이스 아스키코드 = 8
-		default: result = 0xFF; break; 
+		case 0x1C: result = 0x13; break;
+		default: result = 0xFF; break;
 			// 구현안된 것은 무시한다. 구분자는 0xFF
 	}
 	return result;
@@ -107,6 +123,10 @@ void init_intdesc()
 		idt[33].type = (unsigned short)0x8E00;
 		idt[33].offsetl = (unsigned short)(ptr & 0xFFFF);
 		idt[33].offseth = (unsigned short)(ptr >> 16);
+	}
+
+	for (int i = 0; i < VIDEOMAXCOL; i++) {
+		keyboard[i] = 0;
 	}
 	// x86 아키텍처에서 하드웨어와의 통신에 사용되는 언어
 	// 0xAE를 AL 레지스터에 이동(일반 목적 레지스터)
@@ -146,10 +166,10 @@ void idt_ignore()
 		"mov al, 0x20;"
 		"out 0x20, al;"
 	);
-	char tick_str[30];
-	ignore_ticks++;
-    itoa(ignore_ticks, tick_str, 10);
-	kprintf_at(tick_str, 5, 2);
+	// char tick_str[30];
+	// ignore_ticks++;
+    // itoa(ignore_ticks, tick_str, 10);
+	// kprintf_at(tick_str, 5, 2);
 	__asm__ __volatile__
 	(
 		"popfd;"
@@ -182,9 +202,7 @@ void idt_timer()
 	char tick_str[30];
 	timer_ticks++;
     itoa(timer_ticks, tick_str, 10);
-	kprintf_at(tick_str, 5, 5);
-	kprintf(keyt, 7, 40);
-	keyt[0]++;
+	kprintf_at(tick_str, VIDEOMAXCOL-10, VIDEOMAXLINE-1);
 	__asm__ __volatile__
 	(
 		"popfd;"
@@ -217,15 +235,13 @@ void idt_keyboard()
 	);
 	__asm__ __volatile__("mov %0, al;" :"=r"(keybuf) );
 	updateShiftState(keybuf);
+	updateCtrlState(keybuf);
 	keybuf = transScan(keybuf, shift);
 
 	if (keybuf == 0x08 && index != 0)
 		keyboard[--index] = 0;
 	else if (keybuf != 0xFF && keybuf !=0x08)
 		keyboard[index++] = keybuf;
-
-	kprintf_line_clear(8);
-	kprintf(keyboard, 8, 0);
 
 	// char tick_str[30];
 	// key_ticks++;

@@ -24,7 +24,9 @@ Problems with following someone else's code
 Keyboard Driver
 0xAE (Enable keyboard interface) - Clears bit 4 of command byte and re-enables communication with keyboard. - [https://www-ug.eecg.toronto.edu/msl/nios_devices/datasheets/PS2%20Keyboard%20Protocol.htm]
 
-
+Add a shell v0.0.1
+Complete a simple version of a shell using the kstrlen() function and the translate_shell() function to distinguish between commands in the shell and to implement function calls according to the commands
+![Alt text](imgs/add_shell.png)
 
 Current problem
 1. when passing char*(str) as a string, normal output is not possible -> when passing char str[] = "foo" as an array, normal output is possible.
@@ -35,4 +37,5 @@ In text mode video memory, each character takes up 2 bytes, one for the characte
 3. need to check idt_ignore
 ![Alt text](imgs/add_idt.png)
 
+4. Need to change the directory and function location
 
