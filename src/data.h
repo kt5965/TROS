@@ -13,5 +13,7 @@ unsigned short index;
 unsigned short curline;
 unsigned short curcol;
 
+// add diskbuffer
+unsigned char diskbuffer[1024];
 
 #endif

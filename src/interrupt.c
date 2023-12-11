@@ -95,9 +95,6 @@ unsigned char transScan(unsigned char target, unsigned char shift)
 void init_intdesc()
 {
 	// struct IDTR idtr;
-	int i,j;	
-	unsigned short *isr;
-
 	idtr.size = 256*8-1;
 	idtr.addr = (unsigned int)&idt;
 	for (int i = 0; i < 256; i++)
@@ -144,17 +141,19 @@ void init_intdesc()
     (
         "mov eax, %0;"  // idtr의 주소를 eax에 로드
         "lidt [eax];"   // IDTR 레지스터에 IDT의 위치를 로드
-        "mov al, 0xFC;" // 인터럽트 마스크 설정
+		"mov al, 0x00;" // 슬레이브 PIC의 모든 인터럽트 오픈
+		"out 0xA1, al;"
+        "mov al, 0x00;" // 마스터 PIC의 모든 인터럽트 오픈, 0xFC -> 마우스, 타이머만 오픈
         "out 0x21, al;" // PIC에 인터럽트 마스크 값을 전달
-        "sti"           // 인터럽트 활성화
-        : 
-        : "r"(&idtr)
+        :: "r"(&idtr)
     );
+	__asm__ __volatile__("sti");
+	// char test[] = "test";
+	// kprintf(test, 10, 10);
 }
 
 void idt_ignore()
 {
-
 	__asm__ __volatile__
 	(
 		"push gs;"
@@ -163,13 +162,11 @@ void idt_ignore()
 		"push ds;"
 		"pushad;"
 		"pushfd;"
-		"mov al, 0x20;"
+		"mov al, 0x20;" //PIC 하드웨어 재세팅
 		"out 0x20, al;"
+		"mov al, 0xA0;"
+		"out 0xA0, al;"
 	);
-	// char tick_str[30];
-	// ignore_ticks++;
-    // itoa(ignore_ticks, tick_str, 10);
-	// kprintf_at(tick_str, 5, 2);
 	__asm__ __volatile__
 	(
 		"popfd;"
@@ -178,11 +175,11 @@ void idt_ignore()
 		"pop es;"
 		"pop fs;"
 		"pop gs;"
-		"mov esp, ebp;"
-        "pop ebp;"
+		// "mov esp, ebp;"
+        // "pop ebp;"
 		"nop;"
 		"iretd;"
-	);
+	);	
 }
 
 void idt_timer()
@@ -197,12 +194,11 @@ void idt_timer()
 		"pushfd;"
 		"mov al, 0x20;"
 		"out 0x20, al;"
-		
 	);
 	char tick_str[30];
 	timer_ticks++;
     itoa(timer_ticks, tick_str, 10);
-	kprintf_at(tick_str, VIDEOMAXCOL-10, VIDEOMAXLINE-1);
+	kprintf(tick_str, VIDEOMAXCOL-10, VIDEOMAXLINE-1);
 	__asm__ __volatile__
 	(
 		"popfd;"
@@ -217,7 +213,6 @@ void idt_timer()
 		"iretd;"
 	);
 
-
 }
 
 void idt_keyboard()
@@ -230,6 +225,8 @@ void idt_keyboard()
 		"push es;"
 		"push ds;"
 		"pushfd;"
+		"mov al, 0x20;"
+		"out 0x20, al;"
 		"xor al,al;"
 		"in al, 0x60;"
 	);
@@ -242,15 +239,8 @@ void idt_keyboard()
 		keyboard[--index] = 0;
 	else if (keybuf != 0xFF && keybuf !=0x08)
 		keyboard[index++] = keybuf;
-
-	// char tick_str[30];
-	// key_ticks++;
-    // itoa(key_ticks, tick_str, 10);
-	// kprintf_at(tick_str, 3, 6);
 	__asm__ __volatile__
 	(
-		"mov al, 0x20;"
-		"out 0x20, al;"
 		"popfd;"
 		"pop ds;"
 		"pop es;"

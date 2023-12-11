@@ -69,20 +69,16 @@ disk_read:
     mov bx, 0
 
     mov ah, 2
-    mov dl, 0x80
+    mov dl, 0
     mov ch, 0
     mov dh, 0
     mov cl, 2
-    mov al, 2
+    mov al, 20
 
     int 13h
 
     jc error
     
-    ; mov dx, 0x3F2
-    ; xor al, al
-    ; out dx, al
-
     cli
     mov al, 0x11  ; PIC를 초기화한다.
     out 0x20, al

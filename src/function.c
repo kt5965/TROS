@@ -39,19 +39,19 @@ char* itoa(int value, char* str, int base) {
     return str;
 }
 
-// 화면에 문자를 출력
-void kprintf_at(const char* message, int col, int row) {
-    // VGA 메모리 시작 주소
-    volatile char* video_memory = (volatile char*)0xb8000;
-    int offset = (row * 80 + col) * 2; // 2 바이트 당 문자 하나
+// // 화면에 문자를 출력
+// void kprintf_at(const char* message, int col, int row) {
+//     // VGA 메모리 시작 주소
+//     volatile char* video_memory = (volatile char*)0xb8000;
+//     int offset = (row * 80 + col) * 2; // 2 바이트 당 문자 하나
 
-    // 메시지 출력
-    while (*message) {
-        video_memory[offset] = *message++;
-        video_memory[offset + 1] = 0x07;
-        offset += 2;
-    }
-}
+//     // 메시지 출력
+//     while (*message) {
+//         video_memory[offset] = *message++;
+//         video_memory[offset + 1] = 0x07;
+//         offset += 2;
+//     }
+// }
 
 void kprintf_line_clear(int line, int col)
 {
@@ -71,7 +71,7 @@ void kprintf_clear_all()
     }
 }
 
-int kstrcmp(char* str1, char*str2)
+int kstrcmp(char* str1, char* str2)
 {
     for (int i = 0; i < kstrlen(str1); i++)
     {
@@ -90,3 +90,252 @@ int kstrlen(char* str1)
     }
     return i;
 }
+
+// unsigned char HDDstatus()
+// {
+// 	unsigned char value;
+// 	__asm__ __volatile__
+// 	(
+// 		"mov dx,0x1F7;"
+// 		"in al, dx;"
+// 	);
+// 	__asm__ __volatile__("mov %0, al;" :"=r"(value));
+
+// 	return value;
+
+// }
+
+// int HDD_BUSY() // 7번 비트 확인해서 busy 확인
+// {
+//     unsigned char status = HDDstatus();
+//     if ((status & 0x80) == 0x80)
+//     {
+//         return 1;
+//     }
+//     else
+//     {
+//         return 0;
+//     }
+// }
+
+// int HDD_READY() // 6번비트 준비 확인 
+// {
+// 	unsigned char status = HDDstatus();
+
+//     if ((status&0x40) == 0x40)
+//     {
+//         return 1;
+//     }
+//     else
+//     {
+//         return 0;
+//     }
+// }
+
+// int HDD_DRQ() // 데이터가 가 전송 준비 되었는지 확인 3번비트
+// {
+// 	unsigned char status = HDDstatus();
+//     if ((status&0x08) == 0x08)
+//     {
+//         return 1;
+//     }
+//     else
+//     {
+//         return 0;
+//     }
+// }
+
+// int HDD_ERR() // ERR 확인 0번 비트
+// {
+// 	unsigned char status = HDDstatus();
+
+//     if ((status&0x01) == 0x01)
+//     {
+//         return 1;
+//     }
+//     else
+//     {
+//         return 0;
+//     }
+// }
+
+// void HDDread(unsigned int sector, char* buffer)
+// {
+//     // LBA 주소로 변경
+//     unsigned char LBA_a = sector & 0xFF;
+//     unsigned char LBA_b = (sector >> 8) & 0xFF;
+//     unsigned char LBA_c = (sector >> 16) & 0xFF;
+//     // 0xE0 -> LBA 모드를 키기 위한 고정 비트 설정
+//     unsigned char LBA_d = ((sector >> 24) & 0xFF) | 0xE0;;
+
+//     __asm__ __volatile__
+//     (
+//         // 0x3F6 포트로 0 값을 보내 하드디스크 컨트롤러 리셋
+//         // dx 레지스터는 IO 포트 주소를 저장하는데 사용
+//         // 0x1F0: 데이터 레지스터, 데이터 읽기/쓰기에 사용.
+//         // 0x1F1: 에러 레지스터, 에러 코드 읽기에 사용.
+//         // 0x1F2: 섹터 카운트 레지스터, 읽거나 쓸 섹터의 수 설정.
+//         // 0x1F3-0x1F5: LBA 로우/미들/하이 레지스터, LBA 주소 설정.
+//         // 0x1F6: 드라이브/헤드 레지스터, LBA 모드 및 드라이브 선택.
+//         // 0x1F7: 커맨드 레지스터, 
+//         "mov al, 0;"
+// 		"mov dx, 0x3F6;"
+// 		"out dx, al;"
+//         "nop;"
+//     );
+
+// 	__asm__ __volatile__
+// 	(
+//         // 0x1F2번 포트에 읽을 섹터 수를 설정
+// 		"mov al, 0x01;"
+// 		"mov dx, 0x1F2;"
+// 		"out dx, al;"
+//         "nop;"
+// 	);
+//     __asm__ __volatile__
+// 	(
+//         // 01F6부터 01F5까지 포트에 LBA 주소의 각 부분을 보내줌
+//         // al 레지스터 데이터를 전송하거나 명령을 보내는데 사용
+// 		"mov al, %0;"
+// 		"mov dx, 0x1F6;"
+// 		"out dx, al;"::"r"(LBA_d)
+// 	);
+
+
+
+// 	__asm__ __volatile__
+// 	(
+// 		"mov al, %0;"
+// 		"mov dx, 0x1F3;"
+// 		"out dx, al;" ::"r"(LBA_a)
+// 	);
+
+// 	__asm__ __volatile__
+// 	(
+// 		"mov al, %0;"
+// 		"mov dx, 0x1F4;"
+// 		"out dx, al;" ::"r"(LBA_b)
+// 	);
+
+// 	__asm__ __volatile__
+// 	(
+// 		"mov al, %0;"
+// 		"mov dx, 0x1F5;"
+// 		"out dx, al;" ::"r"(LBA_c)
+// 	);
+
+
+// 	__asm__ __volatile__
+// 	(
+//         // 0x1F7번 포트에 읽기명령 0x20을 보냄
+// 		"mov al, 0x20;"
+// 		"mov dx,0x1F7;"
+// 		"out dx, al;"
+// 	);
+
+//     __asm__ __volatile__
+//     (
+//         // 0x1F0번 포트에서 데이터를 읽어와 버퍼에 저장
+//         "mov dx,0x1F0;"
+//         // edi : 데이터를 저장할 메모리 주소
+//         "mov edi, %0;"
+//         // 반복명령에서 사용할 카운터를 저장
+//         "mov ecx, 256;"
+//         "rep insw;" // 16비트 단위로 데이터를 읽어와 edi가 가리키는 메모리 위치에 저장
+//         :: "r"(buffer)
+//     );
+// }
+
+// void HDDwrite(unsigned int sector, char* buffer)
+// {
+
+// 	unsigned char LBA_a = sector & 0xFF; // sector의 [7:0] 비트 추출
+// 	unsigned char LBA_b = (sector >> 8) & 0xFF; // sector의 [15:8] 비트 추출
+// 	unsigned char LBA_c = (sector >> 16) & 0xFF; // sector의 [23:16] 비트 추출
+// 	unsigned char LBA_d = ((sector >> 24) & 0x0F) | 0xE0; // sector의 [27:24] 비트 추출
+
+// 	// HDD INT 활성화
+// 	__asm__ __volatile__
+// 	(
+// 		"mov al, 0;"
+// 		"mov dx, 0x3F6;"
+// 		"out dx, al;"
+// 	);
+
+// 	while (HDD_BUSY() == 1); // HDD가 busy 하다면 계속 대기
+
+// 	/////////////////////////////////////////////////
+// 	// 하드디스크 셋팅 시작
+// 	/////////////////////////////////////////////////
+
+// 	// 드라이브/헤드 레지스터 초기화 + LBA 주소 [27:24] 4비트
+// 	__asm__ __volatile__
+// 	(
+// 		"mov al, %0;"
+// 		"mov dx, 0x1F6;"
+// 		"out dx, al;"::"r"(LBA_d)
+// 	);
+
+// 	__asm__ __volatile__
+// 	(
+// 		"mov al, 0x01;"
+// 		"mov dx,0x1F2;"
+// 		"out dx, al;"
+// 	); // 섹터 1개 쓴다
+
+// 	__asm__ __volatile__
+// 	(
+// 		"mov al, %0;"
+// 		"mov dx,0x1F3;"
+// 		"out dx, al;" ::"r"(LBA_a)
+// 	); // LBA 주소 [7:0] 8비트
+
+// 	__asm__ __volatile__
+// 	(
+// 		"mov al, %0;"
+// 		"mov dx,0x1F4;"
+// 		"out dx, al;" ::"r"(LBA_b)
+// 	); // LBA 주소 [15:8] 8비트
+
+// 	__asm__ __volatile__
+// 	(
+// 		"mov al, %0;"
+// 		"mov dx,0x1F5;"
+// 		"out dx, al;" ::"r"(LBA_c)
+// 	); // LBA 주소 [23:16] 8비트
+
+// 	   /////////////////////////////////////////////////
+// 	   // 하드디스크 셋팅 끝
+// 	   /////////////////////////////////////////////////
+
+
+// 	   // 쓰기(0x30) 내리기 전 하드디스크 드라이버가 명령을 받을 수 있는지 체크
+// 	while ((HDD_BUSY() == 1) || (HDD_READY() == 0));
+
+
+// 	// 쓰기(0x30) 명령 내리기
+// 	__asm__ __volatile__
+// 	(
+// 		"mov al, 0x30;"
+// 		"mov dx,0x1F7;"
+// 		"out dx, al;"
+// 	);
+
+// 	// 명령 내렸는데 오류가 발생했다면 쓰기를 중단한다.
+// 	if (HDD_ERR() == 1)
+// 	{
+// 		kprintf("Error!!", VIDEOMAXLINE - 1, 0);
+// 		return;
+// 	}
+
+// 	while (HDD_DRQ() == 0); // 데이터를 쓸 때까지 대기
+
+
+// 	//  Buffer의 512바이트만큼 데이터를 메모리(0x1F0)에 쓴다
+// 	__asm__ __volatile__("mov dx,0x1F0;");
+// 	__asm__ __volatile__("mov esi, %0;" : : "r"(buffer));
+// 	__asm__ __volatile__("mov ecx, 256");
+// 	__asm__ __volatile__("rep outsw");
+
+
+// }

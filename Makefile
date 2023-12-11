@@ -18,20 +18,20 @@ $(BIN_DIR)/kernel1.img: $(SRC_DIR)/kernel1.asm
 	
 # Compile finction.c
 $(SRC_DIR)/function.o: $(SRC_DIR)/function.c
-		$(CC) -c -masm=intel -m32 -ffreestanding $(SRC_DIR)/function.c -o $(SRC_DIR)/function.o
+		$(CC) -c -O0 -masm=intel -m32 -ffreestanding $(SRC_DIR)/function.c -o $(SRC_DIR)/function.o
 
 # Compile interrupt.c
 $(SRC_DIR)/interrupt.o: $(SRC_DIR)/interrupt.c
-		$(CC) -c -masm=intel -m32 -ffreestanding $(SRC_DIR)/interrupt.c -o $(SRC_DIR)/interrupt.o
+		$(CC) -c -O0 -masm=intel -m32 -ffreestanding $(SRC_DIR)/interrupt.c -o $(SRC_DIR)/interrupt.o
 
 $(SRC_DIR)/shell.o: $(SRC_DIR)/shell.c
-		$(CC) -c -masm=intel -m32 -ffreestanding $(SRC_DIR)/shell.c -o $(SRC_DIR)/shell.o
+		$(CC) -c -O0 -masm=intel -m32 -ffreestanding $(SRC_DIR)/shell.c -o $(SRC_DIR)/shell.o
 
 
 
 # Compile main.c
 $(SRC_DIR)/main.o: $(SRC_DIR)/main.c
-		$(CC) -c -masm=intel -m32 -ffreestanding $(SRC_DIR)/main.c -o $(SRC_DIR)/main.o
+		$(CC) -c -O0 -masm=intel -m32 -ffreestanding $(SRC_DIR)/main.c -o $(SRC_DIR)/main.o
 
 # Link main.o
 $(BIN_DIR)/main.img: $(SRC_DIR)/main.o $(SRC_DIR)/function.o $(SRC_DIR)/interrupt.o $(SRC_DIR)/shell.o
