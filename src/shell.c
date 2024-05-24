@@ -1,7 +1,7 @@
 #include "data.h"
 #include "shell.h"
 #include "function.h"
-
+#include "interrupt.h"
 void sh_clear()
 {
     kprintf_clear_all();
@@ -11,4 +11,9 @@ void sh_clear()
 void sh_version()
 {
 	kprintf("TROS version 0.0.1", ++curline, 0);
+}
+
+void sh_timer_clear()
+{
+    timer_ticks = 0;
 }

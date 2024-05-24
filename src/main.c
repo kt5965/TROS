@@ -57,5 +57,10 @@ void translate_shell()
         sh_version();
         return;
     }
+    if (kstrcmp(keyboard, "timer")) 
+    {   
+        sh_timer_clear();
+        return;
+    }
 	kprintf("There is no such command.",++curline, 0);
 }
