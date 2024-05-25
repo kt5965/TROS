@@ -1,132 +1,105 @@
-%include "init1.inc"
 [org 0]
 [bits 16]
+
 jmp 0x07C0:start
+
 start:
-    mov ax, cs
-    mov ds, ax
-    mov es, ax
+mov ax, cs
+mov ds, ax
+mov es, ax
 
-reset:
-    mov ax, 0
-    mov dl, 0x80
-    int 13h
-    jc reset
+read:
+	mov ax, 0x1000
+	mov es, ax
+	mov bx, 0 ; 0x1000:0000 주소로 읽어 => 물리주소 0x10000
 
-    mov ax, 0xB800
-    mov es, ax
-    mov di, 0
-    mov ax, word [msgBack]
-    mov cx, 0x7FF
-paint:
-    mov word [es:di], ax
-    add di, 2
-    dec cx
-    jnz paint
+	mov ah, 2 ; 디스크에 있는 데이터를 es:bx의 주소로
+	mov al, 20 ; 20섹터를 읽을 것이다 MAX = 64
+	mov ch, 0 ; 0번째 실린더 MAX 1024
+	mov cl, 2 ; 2번째 섹터부터 읽기 시작한다
+	mov dh, 0 ; 헤드는 0 MAX 16
+	mov dl, 0x80 ; 디스크 읽기 
+	int 13h
+	
+	jc read ; 에러나면 다시
 
-disk_read:
-    mov ax, 0x1000
-    mov es, ax
-    mov bx, 0
+	;mov dx, 0x3F2 ;플로피디스크 드라이브의
+	;xor al, al	; 모터를 끈다
+	;out dx, al 
+	
+	cli
 
-    mov ah, 2
-    mov dl, 0x80
-    mov ch, 0
-    mov dh, 0
-    mov cl, 2
-    mov al, 10
+	; 인터럽트 코드 시작
 
-    int 13h
+	mov al, 0x11	;pic 초기화
+	out 0x20, al	;마스터 PIC
+	dw 0x00eb, 0x00eb	;jmp $+2, jmp $+2
+	out 0xA0, al	;슬레이브 PIC
+	dw 0x00eb, 0x00eb
+	
+	mov al, 0x20;마스터 PIC  인터럽트 시작점
+	out 0x21, al
+	dw 0x00eb, 0x00eb
+	mov al, 0x28
+	out 0xA1, al
+	dw 0x00eb, 0x00eb
+	
+	mov al, 0x04	;마스터 PIC의 IRQ 2번에
+	out 0x21, al	;슬레이브 PIC이 연결되어 있다.
+	dw 0x00eb, 0x00eb
+	mov al, 0x02	;슬레이브 PIC이 마스터 PIC이
+	out 0xA1, al	;IRQ 2번에 연결되어 있다.
+	dw 0x00eb, 0x00eb
+	
+	mov al, 0x01	; 8086모드를 사용한다.
+	out 0x21, al
+	dw 0x00eb, 0x00eb
+	out 0xA1, al
+	dw 0x00eb, 0x00eb
+	
+	mov al, 0xFF	;슬레이브 PIC의 모든 인터럽트를
+	out 0xA1, al 	;막아둔다.
+	dw 0x00eb, 0x00eb
+	mov al, 0xFB	;마스터 PIC의 IRQ 2번을 제외한
+	out 0x21, al	;모든 인터럽터를 막아둔다.
 
-    jc error
-    
-    cli
-    mov al, 0x11  ; PIC�? 초기?��?��?��.
-    out 0x20, al  ; Master PIC
-    dw 0x00eb, 0x00eb ; jmp $+2, jmp $+2
-    out 0xA0, al  ; Slave PIC
-    dw 0x00eb, 0x00eb
-
-    mov al, 0x20
-    out 0x21, al
-    dw 0x00eb, 0x00eb
-    mov al, 0x28
-    out 0xA1, al
-    dw 0x00eb, 0x00eb
-
-    mov al, 0x04
-    out 0x21, al
-    dw 0x00eb, 0x00eb
-    mov al, 0x02
-    out 0xA1, al
-    dw 0x00eb, 0x00eb
-
-    mov al, 0x01
-    out 0x21, al
-    dw 0x00eb, 0x00eb
-    out 0xa1, al
-    dw 0x00eb, 0x00eb
-
-    mov al, 0xFF
-    out 0xA1, al
-    dw 0x00eb, 0x00eb
-    mov al, 0xFB
-    out 0x21, al
-
+	; 인터럽트 코드 끝
 
 lgdt[gdtr]
-
+	
 mov eax, cr0
-or eax, 0x00000001
+or eax, 1
 mov cr0, eax
+	
 jmp $+2
 nop
 nop
 
-mov bx, SysDataSelector
+mov bx, 0x10
 mov ds, bx
 mov es, bx
 mov fs, bx
 mov gs, bx
 mov ss, bx
 
-jmp dword SysCodeSelector:0x10000
-
-msgBack db ' ', 0x07
-
-error:
-    mov ax, 0xB800
-    mov es, ax
-    mov di, 160               ; ?��?�� 줄의 ?��?�� ?��치로 ?��?��
-    mov si, errorMsg
-
-print_error_msg:
-    ; 문자?��?�� ?��?�� ?��?��?��?���? 체크
-    lodsb                      ; al?�� 문자?��?�� ?��?�� 문자�? 로드?���? si�? 1 증�??
-    test al, al                ; 문자�? 0?���? 체크
-    jz end_print               ; 0?���? 출력 종료
-
-    ; 문자�? ?��면에 출력
-    stosw                      ; es:di?�� 문자�? ????��?���? di�? 2 증�??
-    add di, 2                  ; attribute byte ?��문에 2 추�??�? 증�??
-
-    jmp print_error_msg        ; ?��?�� 문자�? 출력?���? ?��?�� 루프
-
-end_print:
-
-errorMsg db 'Disk Error', 0
+jmp dword CodeSegment:0x10000
 
 
 gdtr:
-    dw gdt_end - gdt - 1
-    dd gdt+0x7C00
+dw gdt_end - gdt - 1
+dd gdt+0x7C00
 
 gdt:
-    dd 0x00000000, 0x00000000
-    dd 0x0000FFFF, 0x00CF9A00
-    dd 0x0000FFFF, 0x00CF9200
-    dd 0x8000FFFF, 0x0040920B
+
+	dd 0,0 ; NULL 세그
+	CodeSegment equ 0x08
+	dd 0x0000FFFF, 0x00CF9A00 ; 코드 세그
+	DataSegment equ 0x10
+	dd 0x0000FFFF, 0x00CF9200 ; 데이터 세그
+	VideoSegment equ 0x18
+	dd 0x8000FFFF, 0x0040920B ; 비디오 세그
 
 gdt_end:
-    times 510-($-$$) db 0
-    dw 0xAA55
+
+times 510-($-$$) db 0
+dw 0xAA55

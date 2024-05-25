@@ -14,12 +14,10 @@ struct IDT
 	unsigned short selector;
 	unsigned short type;
 	unsigned short offseth;
-
 }__attribute__((packed));
 
 struct IDTR
 {
 	unsigned short size;
 	unsigned int addr;
-
 }__attribute__((packed));

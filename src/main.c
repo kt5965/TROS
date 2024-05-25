@@ -18,7 +18,6 @@ void shell()
     char path[] = "TROS>>";
     curline = 0;
     curcol = kstrlen(path);
-
     while (1)
     {
         __asm__ __volatile__("cli");
@@ -34,11 +33,9 @@ void shell()
             curline++;
             index = 0;
         }
-
         kprintf(path,curline,0);
 		kprintf_line_clear(curline, curcol+index);
 		kprintf(keyboard, curline, curcol);
-
 		__asm__ __volatile__("sti");
     }
 }
@@ -62,5 +59,21 @@ void translate_shell()
         sh_timer_clear();
         return;
     }
+    if (kstrcmp(keyboard, "read")) 
+    {   
+        sh_HDDread();
+        return;
+    }
+    if (kstrcmp(keyboard, "write")) 
+    {   
+        sh_HDDwrite();
+        return;
+    }
+    if (kstrcmp(keyboard, "arg")) 
+    {
+        sh_arg();
+        return;
+    }
+
 	kprintf("There is no such command.",++curline, 0);
 }

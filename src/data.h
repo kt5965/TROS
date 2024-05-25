@@ -8,10 +8,11 @@
 #define FALSE 0
 
 #define DEBUG 24
+
 unsigned char keyboard[VIDEOMAXCOL];
 unsigned short index;
 unsigned short curline;
 unsigned short curcol;
-
+unsigned char diskbuffer[512];
 
 #endif

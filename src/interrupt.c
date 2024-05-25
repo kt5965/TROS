@@ -15,9 +15,9 @@ unsigned char shift = 0;
 unsigned char ctrl = 0;
 
 void updateShiftState(unsigned char scanCode) {
-    if (scanCode == 0x2A || scanCode == 0x36) {  // Shift 키가 눌렸을 때
+    if (scanCode == 0x2A || scanCode == 0x36) {
         shift = 1;
-    } else if (scanCode == 0xAA || scanCode == 0xB6) {  // Shift 키가 떼어졌을 때
+    } else if (scanCode == 0xAA || scanCode == 0xB6) {
         shift = 0;
     }
 }
@@ -50,6 +50,7 @@ unsigned char transScan(unsigned char target, unsigned char shift)
 		case 0x26: 
 			if (ctrl) {
 				kprintf_clear_all();
+
 				curline = -1;
 			}
 			else if (shift) {
@@ -87,7 +88,6 @@ unsigned char transScan(unsigned char target, unsigned char shift)
 		case 0x0E: result = 0x08; break; // 백스페이스 아스키코드 = 8
 		case 0x1C: result = 0x13; break;
 		default: result = 0xFF; break;
-			// 구현안된 것은 무시한다. 구분자는 0xFF
 	}
 	return result;
 }
@@ -144,7 +144,9 @@ void init_intdesc()
     (
         "mov eax, %0;"  // idtr의 주소를 eax에 로드
         "lidt [eax];"   // IDTR 레지스터에 IDT의 위치를 로드
-        "mov al, 0xFC;" // 인터럽트 마스크 설정
+		"mov al, 0x00;"
+		"out 0xA1, al;"
+        "mov al, 0x00;" // 인터럽트 마스크 설정
         "out 0x21, al;" // PIC에 인터럽트 마스크 값을 전달
         "sti"           // 인터럽트 활성화
         : 
@@ -166,10 +168,7 @@ void idt_ignore()
 		"mov al, 0x20;"
 		"out 0x20, al;"
 	);
-	// char tick_str[30];
-	// ignore_ticks++;
-    // itoa(ignore_ticks, tick_str, 10);
-	// kprintf_at(tick_str, 5, 2);
+	
 	__asm__ __volatile__
 	(
 		"popfd;"
@@ -243,10 +242,6 @@ void idt_keyboard()
 	else if (keybuf != 0xFF && keybuf !=0x08)
 		keyboard[index++] = keybuf;
 
-	// char tick_str[30];
-	// key_ticks++;
-    // itoa(key_ticks, tick_str, 10);
-	// kprintf_at(tick_str, 3, 6);
 	__asm__ __volatile__
 	(
 		"mov al, 0x20;"
