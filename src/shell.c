@@ -21,10 +21,10 @@ void sh_timer_clear()
 
 void sh_HDDread()
 {
-	HDDread(0, diskbuffer);
+	HDDread(1, 0, diskbuffer);
 	kprintf(diskbuffer, ++curline, 0);
 
-	HDDread(1, diskbuffer);
+	HDDread(1, 1, diskbuffer);
 	kprintf(diskbuffer, ++curline, 0);
 }
 
@@ -33,8 +33,8 @@ void sh_HDDwrite()
 
 	unsigned char test[512] = "Hello world!";
 
-	HDDwrite(0, test);
-	HDDwrite(1, test);
+	HDDwrite(1, 0, test);
+	HDDwrite(1, 1, test);
 
 }
 

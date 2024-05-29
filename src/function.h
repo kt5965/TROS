@@ -10,6 +10,7 @@ void kprintf_clear_all();
 int kstrcmp(char* str1, char*str2);
 int kstrlen(char* str1);
 void kprintf_arg(int target, char** video);
-void HDDread(unsigned int sector, char* buffer);
+void HDDread(unsigned int hdd_number, unsigned int sector, char* buffer);
+void HDDwrite(unsigned int hdd_number, unsigned int sector, char* buffer);
 
 #endif

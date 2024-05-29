@@ -179,13 +179,17 @@ int HDD_ERR()
         return 0;
 }
 
-void HDDread(unsigned int sector, char* buffer)
+void HDDread(unsigned int hdd_number, unsigned int sector, char* buffer)
 {
 	
 	unsigned char LBA_a = sector & 0xFF; // sector의 [7:0] 비트 추출
 	unsigned char LBA_b = ( sector >> 8 ) & 0xFF; // sector의 [15:8] 비트 추출
 	unsigned char LBA_c = ( sector >> 16) & 0xFF; // sector의 [23:16] 비트 추출
-	unsigned char LBA_d = ( ( sector >> 24) & 0x0F ) | 0xE0 ; 
+    unsigned char LBA_d;
+    if (hdd_number)
+	    LBA_d = ( (sector >> 24) & 0x0F ) | 0xF0;
+    else
+        LBA_d = ( (sector >> 24) & 0x0F ) | 0xE0;
     // sector의 [27:24] 비트 추출
 
 	// HDD INT 활성화
@@ -273,13 +277,17 @@ void HDDread(unsigned int sector, char* buffer)
 
 }
 
-void HDDwrite(unsigned int sector, char* buffer)
+void HDDwrite(unsigned int hdd_number, unsigned int sector, char* buffer)
 {
 
 	unsigned char LBA_a = sector & 0xFF; // sector의 [7:0] 비트 추출
 	unsigned char LBA_b = (sector >> 8) & 0xFF; // sector의 [15:8] 비트 추출
 	unsigned char LBA_c = (sector >> 16) & 0xFF; // sector의 [23:16] 비트 추출
-	unsigned char LBA_d = ((sector >> 24) & 0x0F) | 0xE0; // sector의 [27:24] 비트 추출
+    unsigned char LBA_d;
+    if (hdd_number)
+	    LBA_d = ( (sector >> 24) & 0x0F ) | 0xF0; // slave hdd write
+    else
+        LBA_d = ( (sector >> 24) & 0x0F ) | 0xE0; // master disk write
 
 	// HDD INT 활성화
 	__asm__ __volatile__
