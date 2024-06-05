@@ -9,6 +9,8 @@
 
 #define DEBUG 24
 
+extern unsigned int current_directory;
+
 unsigned char keyboard[VIDEOMAXCOL];
 unsigned short index;
 unsigned short curline;

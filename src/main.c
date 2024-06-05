@@ -74,6 +74,16 @@ void translate_shell()
         sh_arg();
         return;
     }
-
+    if (kstrcmp(keyboard, "fs")) 
+    {
+        kprintf("Filesystem initialized", ++curline, 0);
+        sh_fs();
+        return;
+    }
+    if (kstrcmp(keyboard, "mkdir"))
+    {
+        sh_mkdir();
+        return;
+    }
 	kprintf("There is no such command.",++curline, 0);
 }

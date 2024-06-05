@@ -8,6 +8,7 @@ void idt_keyboard();
 extern unsigned int timer_ticks;
 unsigned char transScan(unsigned char keybuf, unsigned char shift);
 void updateShiftState(unsigned char scanCode);
+
 struct IDT
 {
 	unsigned short offsetl;

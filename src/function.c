@@ -10,8 +10,11 @@ void kprintf(char* str, int line, int col, ...)
     char *video = (char*)(0xB8000 + 160 * line + col*2);
 	for (int i = 0; str[i] != 0; i++)
 	{
-		if ( str[i] == '%' )
-			kprintf_arg(((int)va_arg(va,int)), &video);
+		if ( str[i] == '%' && str[i+1] == 'd')
+		{
+			kprintf_arg(str+i, ((int)va_arg(va,int)), &video);
+			i++;
+		}
 		else
 		{
 			*video++ = str[i];
@@ -23,30 +26,95 @@ void kprintf(char* str, int line, int col, ...)
     return;
 }
 
-void kprintf_arg(int target, char** video)
+void printf(char* str, ...)
 {
-	unsigned char buffer[64];
-	int i = 0;
+    va_list va;
+    va_start(va, str);
 
-	for( ; target != 0 ; i++)
+    char *video = (char*)(0xB8000 + 160 * ++curline + 0);
+	for (int i = 0; str[i] != '\0'; i++)
 	{
-		buffer[i] = '0' + target % 10;
-		target = target / 10;
+		if (str[i] == '%' && (str[i+1] == 'd' || str[i+1] == 's'))
+		{
+			kprintf_arg(str+i, (int)va_arg(va,int), &video);
+			i++;
+		}
+		else
+		{
+			*video++ = str[i];
+			*video++ = 0x03; 
+		}
 	}
+    va_end(va);
 
-	buffer[i] = 0;
+    return;
+}
 
-	for( i-- ; i >= 0 ; i-- )
-	{
-		**video = buffer[i];
-		(*video)++;
 
-		**video = 0x03;
-		(*video)++;
+char* kstrcpy(char* dest, const char* src) {
+    char* original_dest = dest;
+    while (*src != '\0') {
+        *dest = *src;
+        dest++;
+        src++;
+    }
+    *dest = '\0';
+    return original_dest;
+}
+int kmemcpy(char* dest, char* src, int size) {
+    int i;
+    for (i = 0; i < size; i++)
+        dest[i] = src[i];
+    return i;
+}
+
+int kmemset(char* dest, int value, int size) {
+	int i;
+	for (i = 0; i < size; i++)
+		dest[i] = value;
+	return i;
+}
+
+
+void kprintf_arg(const char* format, int target, char** video)
+{
+	if (format[1] == 'd') {
+		unsigned char buffer[64];
+		int i = 0;
+		int isNegative = 0;
+
+		if ((int)target < 0) {
+			isNegative = 1;
+			target = -(int)target;
+			buffer[i++] = '-';
+		}
+
+		int start = i;
+		do {
+			buffer[i++] = '0' + (target % 10);
+			target /= 10;
+		} while (target > 0);
+
+		if (isNegative) {
+			buffer[i++] = '-';
+		}
+		buffer[i] = '\0';
+        for (int j = i - 1; j >= start; j--) {
+            **video = buffer[j];
+            (*video)++;
+            **video = 0x03;
+            (*video)++;
+        }
 	}
-
-	return;
-
+	else if (format[1] == 's') {
+        char* str = (char*)target;
+        while (*str != '\0') {
+            **video = *str++;
+            (*video)++;
+            **video = 0x03;
+            (*video)++;
+        }
+    }
 }
 
 // ������ itoa �Լ�. ���ڸ� ���ڿ��� ��ȯ
@@ -75,6 +143,7 @@ char* itoa(int value, char* str, int base) {
     }
     return str;
 }
+
 
 // ȭ�鿡 ���ڸ� ���
 void kprintf_at(const char* message, int col, int row) {
@@ -108,9 +177,11 @@ void kprintf_clear_all()
     }
 }
 
+
+
 int kstrcmp(char* str1, char*str2)
 {
-    for (int i = 0; i < kstrlen(str1); i++)
+    for (int i = 0; i < kstrlen(str2); i++)
     {
         if (str1[i] != str2[i])
             return FALSE;        
@@ -272,8 +343,9 @@ void HDDread(unsigned int hdd_number, unsigned int sector, char* buffer)
 	// 읽기가 성공했으므로 Buffer에다가 512바이트만큼 데이터를 옮긴다.
 	__asm__ __volatile__("mov dx,0x1F0;");
 	__asm__ __volatile__("mov edi, %0;" : : "r"(buffer));
-	__asm__ __volatile__("mov ecx, 256");
+	__asm__ __volatile__("mov ecx, 256;");
 	__asm__ __volatile__("rep insw");
+	// __asm__ __volatile__("mov ecx, %0;" : : "r"(sizeof(buffer)));
 
 }
 

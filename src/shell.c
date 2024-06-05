@@ -2,6 +2,8 @@
 #include "shell.h"
 #include "function.h"
 #include "interrupt.h"
+#include "fs.h"
+
 
 void sh_clear()
 {
@@ -30,18 +32,24 @@ void sh_HDDread()
 
 void sh_HDDwrite()
 {
-
 	unsigned char test[512] = "Hello world!";
 
 	HDDwrite(1, 0, test);
 	HDDwrite(1, 1, test);
-
 }
 
 void sh_arg()
 {
 	int test[] = { 12, 345, 6789, 12345 };
-
 	kprintf("Test : % and % and % and % and % ", ++curline, 0, test[0], test[1], test[2], test[3], 3);
+}
 
+void sh_fs()
+{
+	initFileSystem();
+}
+
+void sh_mkdir()
+{
+	createDirectory("test2");
 }
