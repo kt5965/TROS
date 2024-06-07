@@ -9,12 +9,12 @@
 
 #define DEBUG 24
 
-extern unsigned int current_directory;
 
 unsigned char keyboard[VIDEOMAXCOL];
 unsigned short index;
 unsigned short curline;
 unsigned short curcol;
+unsigned int current_directory;
 unsigned char diskbuffer[512];
 
 #endif

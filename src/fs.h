@@ -4,13 +4,12 @@
 #define MAX_ENTRIES_PER_DIR 16
 #define MAX_FILE_LENGTH 12
 
-#pragma pack(push, 1)
 struct BootSector {
     unsigned int fs_size;
     unsigned int block_size;
     unsigned int root_dir;
 }__attribute__((packed));
-#pragma pack(pop)
+
 
 struct DirectoryEntry {
     char filename[MAX_FILE_LENGTH];
@@ -25,5 +24,6 @@ struct Directory {
 
 void initFileSystem();
 void createDirectory(char *dirname);
+void checkGaurds();
 
 #endif

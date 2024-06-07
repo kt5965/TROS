@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __INTERRUPT_H__
+#define __INTERRUPT_H__
 
 void init_intdesc();
 void idt_ignore();
@@ -22,3 +23,5 @@ struct IDTR
 	unsigned short size;
 	unsigned int addr;
 }__attribute__((packed));
+
+#endif

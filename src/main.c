@@ -2,7 +2,7 @@
 #include "interrupt.h"
 #include "shell.h"
 #include "data.h"
-
+#include "fs.h"
 void shell();
 void translate_shell();
 
